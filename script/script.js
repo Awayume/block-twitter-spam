@@ -32,7 +32,7 @@ import {detectLang} from './detect_lang.js';
  * @param {Object<any, any>} dict2 - 辞書2
  * @return {boolean} 2つの辞書が共通の値を持っている場合はtrue、そうでない場合はfalse
  */
-function haveCommonValues(dict1, dict2) {
+const haveCommonValues = (dict1, dict2) => {
   // 辞書から値の配列を取得
   const values1 = Object.values(dict1);
   const values2 = Object.values(dict2);
@@ -58,7 +58,7 @@ function haveCommonValues(dict1, dict2) {
   }
 
   return false;
-}
+};
 
 /**
  * テキストに占める日本語の割合を求める。
@@ -66,7 +66,7 @@ function haveCommonValues(dict1, dict2) {
  * @param {string} text - 判定するテキスト
  * @return {number} 日本語の割合
  */
-function calcJapaneseRatio(text) { // eslint-disable-line no-unused-vars
+const calcJapaneseRatio = (text) => { // eslint-disable-line no-unused-vars
   // 日本語の文字数を求める
   let japaneseCount = 0;
   for (const element of text) {
@@ -76,7 +76,7 @@ function calcJapaneseRatio(text) { // eslint-disable-line no-unused-vars
   }
   // 日本語の文字数をテキストの文字数で割る
   return japaneseCount / text.length;
-}
+};
 
 /**
  * テキストに占めるアラビア語の割合を求める。
@@ -84,7 +84,7 @@ function calcJapaneseRatio(text) { // eslint-disable-line no-unused-vars
  * @param {string} text - 判定するテキスト
  * @return {number} アラビア語の割合
  */
-function calcArabicRatio(text) {
+const calcArabicRatio = (text) => {
   // アラビア語の文字数を求める
   let arabicCount = 0;
   for (const element of text) {
@@ -94,7 +94,7 @@ function calcArabicRatio(text) {
   }
   // アラビア語の文字数をテキストの文字数で割る
   return arabicCount / text.length;
-}
+};
 
 /**
  * テキストの絵文字の個数を求める。
@@ -102,7 +102,7 @@ function calcArabicRatio(text) {
  * @param {string} text - 判定するテキスト
  * @return {number} 絵文字の個数
  */
-function calcEmojiCount(text) {
+const calcEmojiCount = (text) => {
   // 絵文字の個数を求める
   let emojiCount = 0;
   for (const element of text) {
@@ -111,7 +111,7 @@ function calcEmojiCount(text) {
     }
   }
   return emojiCount;
-}
+};
 
 /**
  * テキストに占める絵文字の割合を求める。
@@ -119,12 +119,12 @@ function calcEmojiCount(text) {
  * @param {string} text - 判定するテキスト
  * @return {number} 絵文字の割合
  */
-function calcEmojiRatio(text) {
+const calcEmojiRatio = (text) => {
   // 絵文字の個数を求める
   const emojiCount = calcEmojiCount(text);
   // 絵文字の個数をテキストの文字数で割る
   return emojiCount / text.length;
-}
+};
 
 /**
  * スパムによくある文言が含まれているか確認する。
@@ -132,7 +132,7 @@ function calcEmojiRatio(text) {
  * @param {string} text - 判定するテキスト
  * @return {boolean} スパムによくある文言が含まれていた場合はtrue, そうでない場合はfalse
  */
-function checkSpamWord(text) {
+const checkSpamWord = (text) => {
   /**
    * スパムによくある文言を入れる配列。
    * @type {Array<string>}
@@ -146,7 +146,7 @@ function checkSpamWord(text) {
     }
   }
   return isSpam;
-}
+};
 
 /**
  * ツイートがスパムかどうか判定する。
@@ -154,7 +154,7 @@ function checkSpamWord(text) {
  * @param {TweetData} tweetData - ツイートのデータ
  * @return {SpamInfo} スパム判定の結果
  */
-function calcSpamScore(tweetData) { // eslint-disable-line sonarjs/cognitive-complexity
+const calcSpamScore = (tweetData) => { // eslint-disable-line sonarjs/cognitive-complexity
   // TODO: sonarjs/cognitive-complexityの解消
   // tweetDataの例
   /*
@@ -337,7 +337,7 @@ function calcSpamScore(tweetData) { // eslint-disable-line sonarjs/cognitive-com
     }
   }
   return {'score': spamScore, 'reason': spamReason};
-}
+};
 
 /**
  * ツイートとユーザー情報を保存する配列。
@@ -349,11 +349,11 @@ let url = window.location.href;
 /**
  * ツイートの解析を行う。
  */
-function main() {
+const main = () => {
   /**
    * ツイートを解析し保存する。
    */
-  function saveProperties() { // eslint-disable-line unicorn/consistent-function-scoping
+  const saveProperties = () => { // eslint-disable-line unicorn/consistent-function-scoping
     // TODO: unicorn/consistent-function-scopingの解消
     // urlが変わった場合
     if (url != window.location.href) {
@@ -470,7 +470,7 @@ function main() {
         }
       }
     }
-  }
+  };
 
   // saveProps()を実行
   saveProperties();
@@ -507,11 +507,13 @@ function main() {
       tweetData['processed'] = true;
     }
   }
-}
+};
 
-// data-testid="primaryColumn"に変更があった場合にsaveProps()を実行。console.logでtweetDatasを確認
-const observer = new MutationObserver(main);
-observer.observe(document.querySelector('body'), {
-  childList: true,
-  subtree: true,
-});
+(() => {
+  // data-testid="primaryColumn"に変更があった場合にsaveProps()を実行。console.logでtweetDatasを確認
+  const observer = new MutationObserver(main);
+  observer.observe(document.querySelector('body'), {
+    childList: true,
+    subtree: true,
+  });
+})();

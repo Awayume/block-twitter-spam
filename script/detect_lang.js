@@ -45,7 +45,7 @@ const characterRanges = {
  * @param {string} text - ツイートのテキスト
  * @return {LangInfo} 推測したツイートの主言語
  */
-export function detectLang(text) { // eslint-disable-line sonarjs/cognitive-complexity
+export const detectLang = (text) => { // eslint-disable-line sonarjs/cognitive-complexity
   // TODO: sonarjs/cognitive-complexityの解消
   const langStats = {};
   let totalCount = 0;
@@ -110,7 +110,7 @@ export function detectLang(text) { // eslint-disable-line sonarjs/cognitive-comp
   }
 
   // 確率の高い順にソート
-  langPercentages.sort(function(a, b) {
+  langPercentages.sort((a, b) => {
     return b.percentage - a.percentage;
   });
 
@@ -118,4 +118,4 @@ export function detectLang(text) { // eslint-disable-line sonarjs/cognitive-comp
   const secondLang = langPercentages[1] ? langPercentages[1].lang : null;
 
   return {primary: langPercentages[0].lang, secondary: secondLang};
-}
+};
