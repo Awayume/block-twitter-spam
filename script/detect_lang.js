@@ -45,7 +45,7 @@ const characterRanges = {
  * @param {string} text - ツイートのテキスト
  * @return {LangInfo} 推測したツイートの主言語
  */
-function detectLang(text) { // eslint-disable-line no-unused-vars, sonarjs/cognitive-complexity
+export function detectLang(text) { // eslint-disable-line sonarjs/cognitive-complexity
   // TODO: sonarjs/cognitive-complexityの解消
   const langStats = {};
   let totalCount = 0;

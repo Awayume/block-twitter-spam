@@ -1,3 +1,5 @@
+import {detectLang} from './detect_lang.js';
+
 /**
  * @typedef {Object} TweetData - ツイートのデータ
  * @property {string} lang - ツイートの言語を示す言語コード
@@ -365,8 +367,8 @@ function main() {
     // 要素ごとにループ
     for (const article of elements) {
       const temporaryData = {};
-      element1 = article.querySelector('div[role=\'group\'][id]');
-      element2 = article;
+      const element1 = article.querySelector('div[role=\'group\'][id]');
+      const element2 = article;
       // __reactProps$で始まるプロパティを探す
       const reactPropertiesName1 = Object
           .getOwnPropertyNames(element1)
