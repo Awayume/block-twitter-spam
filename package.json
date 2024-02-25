@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "",
+  "type": "module",
   "homepage": "https://github.com/mouseos/block-twitter-spam",
   "bugs": {
     "url": "https://github.com/mouseos/block-twitter-spam/issues"
