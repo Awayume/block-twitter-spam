@@ -25,7 +25,7 @@
     "jsdoc/tag-lines": "off",
     "jsdoc/check-alignment": "off",
     "jsdoc/require-returns": "off",
-    "max-len": ["warn", { "code": 100 }],
+    "max-len": ["warn", { "code": 110 }],
     "unused-imports/no-unused-imports": "error",
     "unicorn/catch-error-name": ["error", { "name": "err" }],
     "unicorn/expiring-todo-comments": "off",
