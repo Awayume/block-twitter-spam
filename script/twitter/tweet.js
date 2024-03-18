@@ -1,3 +1,5 @@
+import {getUserVerifiedDate} from './api.js';
+
 /**
  * ツイートのデータを保持するクラス。
  */
@@ -29,8 +31,7 @@ export class Tweet {
          * @return {Promise<Date>} 認証された日時
          */
         get verifiedAt() {
-          // TODO
-          throw new Error('Not implemented');
+          return getUserVerifiedDate(this.author.screenName);
         },
       },
       /** @type {number} 総ツイート数 */
