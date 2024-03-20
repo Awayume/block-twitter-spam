@@ -1,29 +1,6 @@
 import {detectLang} from './detect_lang.js';
+import {Tweet} from './twitter/tweet.js';
 
-/**
- * @typedef {Object} TweetData - ツイートのデータ
- * @property {string} lang - ツイートの言語を示す言語コード
- * @property {string} ariaLabelledby
- * @property {string} quotedUserName - ツイートしたユーザーの名前
- * @property {string} quotedScreenName - ツイートしたユーザーの表示名（ID）
- * @property {string} quotedExpandedUrl - リンクカードに展開するURL
- * @property {string} quotedText - ツイート本文
- * @property {string} quotedUserDescription - ツイートしたユーザーのプロフィール
- * @property {boolean} isTranslator
- * @property {string} translatorType
- * @property {boolean} isVerified - 認証済みかどうか
- * @property {boolean} isBlueVerified - Twitter Blueで認証されているかどうか
- * @property {number} favoritesCount - ツイートしたユーザーのいいね数
- * @property {number} followersCount - ツイートしたユーザーのフォロワー数
- * @property {any?} isFollowing - ツイートしたユーザーをフォローしているかどうか
- * @property {number} friendsCount - ツイートしたユーザーがフォローしているアカウントの数
- * @property {number} statusesCount - ツイートしたユーザーの総ツイート数
- * @property {boolean} processed - 処理済みかどうか
- *
- * @typedef {Object} SpamInfo - スパムの情報
- * @property {number} score - スパムスコア
- * @property {string} reason - 判定の理由
- */
 
 /**
  * 2つの辞書が共通の値を持っているかどうかを確認する。
@@ -151,123 +128,29 @@ const checkSpamWord = (text) => {
 /**
  * ツイートがスパムかどうか判定する。
  *
- * @param {TweetData} tweetData - ツイートのデータ
+ * @param {Tweet} tweet - ツイートのデータ
  * @return {SpamInfo} スパム判定の結果
  */
-const calcSpamScore = (tweetData) => { // eslint-disable-line sonarjs/cognitive-complexity
-  // TODO: sonarjs/cognitive-complexityの解消
-  // tweetDataの例
-  /*
-    {
-    "lang": "ja",
-    "ariaLabelledby": "id__z46i4w6tmvs id__a1rdb67xket id__0xlad3oysjs id__cs8tmlew9o "
-        + "id__a95mattlpor id__abzezc8k98 id__h0fs7z4mqwp id__qab83krya1r id__72bg0ewzfjd "
-        + "id__0bb3h6ghsqbo id__v8dftwo78r id__6eosoon75ic id__147wubxzoj3 id__ih8kimy90k "
-        + "id__ofqsktnynbn id__abxgt7ktwqq id__4gyjom0ly1z id__wnua460vu47 id__bp4igofpjus",
-    "quotedUserName": "ゆう🖱🐭💕🐰💻 ROM焼き 修理代行受付中",
-    "quotedScreenName": "mouse_soft_y",
-    "quotedExpandedUrl": "https://www.amazon.jp/hz/wishlist/ls/1AYDYDDWH3NZG?ref_=wl_share",
-    "quotedText": "内部API利用でスパム検出精度が上がった https://t.co/TaHYgNQgu1",
-    "quotedUserDescription": "サブ垢:@mouse_soft_y_en\n"
-        + "改造とソフトウェア開発。rom焼き、改造、修理、ウイルス除去代行受付中です。相談は無料。希望者はDMへ（依頼が多く返信遅れます）\n"
-        + "ソフト販売中。天安門事件（スパム避け）\n\nSapporo City FM、SmileTabLabo wiki運営",
-    "isTranslator": false,
-    "translatorType": "none",
-    "isVerified": false,
-    "isBlueVerified": false,
-    "favoritesCount": 286243,
-    "followersCount": 2335,
-    "isFollowing": null,
-    "friendsCount": 1177,
-    "statusesCount": 74056,
-    "processed": true
-}
-    */
-  // フォローしているか確認
-  // eslint-disable-next-line no-unused-vars
-  const isFollowing = tweetData['isFollowing'];
-  // spamScoreを計算する
+const calcSpamScore = (tweet) => { // eslint-disable-line sonarjs/cognitive-complexity
   let spamScore = 0;
-  // htmlとしてスパムの理由を入れる変数
+  /** @type {string} htmlとしてスパムの理由を入れる変数 */
   let spamReason = '';
 
-  // if (isFollowing) {
-
   // ツイート本文のアラビア語の割合を求める
-  const arabicRatio = calcArabicRatio(tweetData['quotedText']);
+  const arabicRatio = calcArabicRatio(tweet.content);
   // ツイート本文の絵文字の割合を求める
-  const emojiRatio = calcEmojiRatio(tweetData['quotedText']);
+  const emojiRatio = calcEmojiRatio(tweet.content);
   // プロフィール文のアラビア語の割合を求める
   // eslint-disable-next-line no-unused-vars
-  const arabicRatioProfile = calcArabicRatio(tweetData['quotedUserDescription']);
+  const arabicRatioProfile = calcArabicRatio(tweet.author.description);
   // プロフィール文の文字数を求める
   // eslint-disable-next-line no-unused-vars
-  const profileLength = tweetData['quotedUserDescription'].length;
+  const profileLength = tweet.author.description.length;
   // ユーザー名のアラビア語の割合を求める
   // eslint-disable-next-line no-unused-vars
-  const arabicRatioName = calcArabicRatio(tweetData['quotedUserName']);
-  // スコアを計算する
-  // スパムが多い国の言語(jaかen以外)の場合
-  /*
-  //本文
-  if (tweetData["lang"] != "ja") {
-    //スコアを30加算する
-    spamScore += 30;
-    //中東系ならスコアをさらに10加算する
-    let middleEastern = ["ar", "fa", "ur", "ps", "sd", "ku", "ckb", "ha", "yi", "he"];
-    if (middleEastern.includes(tweetData["lang"])) {
-      spamScore += 10;
-    }
-    //英語ならスコアを20減算する
-    if (tweetData["lang"] == "en") {
-      spamScore -= 20;
-    }
-  }
-  //プロフィールに日本語が含まれていない場合
-  if (calcJapaneseRatio(tweetData["quotedUserDescription"]) <= 0.1) {
-    //スコアを30加算する
-    spamScore += 10;
-  }
-  //プロフィールのアラビア語の割合が0.1以上の場合
-
-  if (arabicRatioProfile >= 0.1) {
-    //スコアを30加算する
-    spamScore += 30;
-  }
-
-  //文字数が10以下で絵文字の割合が0.5以上の場合
-  if (tweetData["quotedText"].length <= 10 && emojiRatio >= 0.5) {
-    //スコアを30加算する
-    spamScore += 30;
-  }
-
-  //プロフィールが空の場合
-  if (tweetData["quotedUserDescription"] == null) {
-    //スコアを30加算する
-    spamScore += 30;
-  }
-
-  //blue verifiedの場合
-  if (tweetData["isBlueVerified"]) {
-    //スコアを30加算する
-    spamScore += 40;
-  }
-
-  //quotedScreenNameが2個以上tweetDataにある場合
-  let quotedScreenNameCount = 0;
-  tweetDatas.forEach(tweetData2 => {
-    if (tweetData2["quotedScreenName"] == tweetData["quotedScreenName"]) {
-      quotedScreenNameCount++;
-    }
-  });
-  if (quotedScreenNameCount >= 2) {
-    //スコアを30加算する
-    spamScore += 30;
-  }
-  */
-  // }
+  const arabicRatioName = calcArabicRatio(tweet.author.name);
   // スパムによくある文言が含まれている場合
-  if (checkSpamWord(tweetData['quotedText'])) {
+  if (checkSpamWord(tweet.content)) {
     console.log('スパムによくある文言が含まれています');
     spamReason+='<p>スパムによくある文言が含まれています</p>';
     spamScore += 50;
@@ -279,15 +162,13 @@ const calcSpamScore = (tweetData) => { // eslint-disable-line sonarjs/cognitive-
     spamScore += 10;
   }
   // プロフィールとツイート本文の言語が異なるかを確認。異なる場合はスコアを10加算する
-  const langTweet = detectLang(tweetData['quotedText']);
-  const langProfile = detectLang(tweetData['quotedUserDescription']);
-  console.log('lang');
-  console.log(langTweet);
-  console.log('langProfile');
-  console.log(langProfile);
+  const tweetLang = detectLang(tweet.content);
+  const profileLang = detectLang(tweet.author.description);
+  console.log('tweetLang', tweetLang);
+  console.log('profileLang', profileLang);
 
-  // プロフィールとツイート本文の言語が異なる場合primaryとsecondaryの順序は問わないので一致するか確認。
-  if (!haveCommonValues(langTweet, langProfile)) {
+  // プロフィールとツイート本文の言語が異なる場合primaryとsecondaryの順序は問わず一致するか確認。
+  if (!haveCommonValues(tweetLang, profileLang)) {
     console.log('ツイート言語とプロフィール言語が異なるためスコアを20加算します');
     spamReason+='<p>ツイート言語とプロフィール言語が異なる</p>';
     spamScore += 20;
@@ -300,202 +181,98 @@ const calcSpamScore = (tweetData) => { // eslint-disable-line sonarjs/cognitive-
     spamScore += 20;
   }
   // blue verifiedの場合
-  if (tweetData['isBlueVerified']) {
+  if (tweet.author.verifyStatus?.type === 'Blue') {
     console.log('blue verifiedのためスコアを20加算します');
     spamReason+='<p>blue verified</p>';
     spamScore += 20;
   }
 
-  // リプに同じ人が2個以上tweetDataにある場合
-  let quotedScreenNameCount = 0;
-  // 現在のurlを取得し/status/という文字が含まれる場合
-  if (window.location.href.includes('/status/')) {
-    // tweetDatas[0]のツイート言語とtweetDataのツイート言語が一致しない場合のみ
-    if (tweetDatas[0]['lang'] != tweetData['lang']) {
+  /** @type {Number} そのユーザーによるツリー内のツイート数 */
+  let tweetCount = 0;
+  // ツリー内かつ親ツイートと異なるユーザーの場合
+  if (window.location.href.includes('/status/') && tweets[0].author.id !== tweet.author.id) {
+    // 親ツイートと言語が一致しない場合のみ
+    // TODO: 処理の改善
+    if (tweets[0].language != tweet.language) {
       console.log('元ツイとツイート言語が異なるためスコアを30加算します');
       spamReason+='<p>元ツイとツイート言語が異なる</p>';
       // スコアを30加算する
       spamScore += 30;
     }
 
-    // tweetDatas[0]のユーザー名と一致しない場合のみ
-    console.log('url:' + window.location.href);
-    // tweetDatas[0]["quotedScreenName"] != tweetData["quotedScreenName"]
-    console.log('tweetDatas[0]["quotedScreenName"]:' + tweetDatas[0]['quotedScreenName']);
-    console.log('tweetData["quotedScreenName"]:' + tweetData['quotedScreenName']);
-    if (tweetDatas[0]['quotedScreenName'] != tweetData['quotedScreenName']) {
-      for (const tweetData2 of tweetDatas) {
-        if (tweetData2['quotedScreenName'] == tweetData['quotedScreenName']) {
-          quotedScreenNameCount++;
-        }
-      }
-      if (quotedScreenNameCount >= 2) {
-        console.log('リプに同じ人が2個以上いるためスコアを30加算します');
-        spamReason+='<p>リプに同じ人が2個以上いる</p>';
-        spamScore += 30;
+    for (const tw of tweets) {
+      if (tweet.id === tw.id && tweet.author.id === tw.author.id) {
+        tweetCount++;
       }
     }
+    if (tweetCount >= 2) {
+      console.log('リプに同じ人が2個以上いるためスコアを30加算します');
+      spamReason+='<p>リプに同じ人が2個以上いる</p>';
+      spamScore += 30;
+    }
   }
+
   return {'score': spamScore, 'reason': spamReason};
 };
 
 /**
- * ツイートとユーザー情報を保存する配列。
- * @type {Array<TweetData>}
+ * ツイートデータを保存する配列。
+ * @type {Array<Tweet>}
  */
-let tweetDatas = [];
+const tweets = [];
 let url = window.location.href;
 
 /**
  * ツイートの解析を行う。
  */
 const main = () => {
-  /**
-   * ツイートを解析し保存する。
-   */
-  const saveProperties = () => { // eslint-disable-line unicorn/consistent-function-scoping
-    // TODO: unicorn/consistent-function-scopingの解消
-    // urlが変わった場合
-    if (url != window.location.href) {
-      // tweetDatasを初期化
-      tweetDatas = [];
-      // urlを更新
-      url = window.location.href;
-    }
-    // data-testidがcellInnerDivである要素を取得する
-    const elements = document.querySelectorAll('article');
-    // 要素ごとにループ
-    for (const article of elements) {
-      const temporaryData = {};
-      const element1 = article.querySelector('div[role=\'group\'][id]');
-      const element2 = article;
-      // __reactProps$で始まるプロパティを探す
-      const reactPropertiesName1 = Object
-          .getOwnPropertyNames(element1)
-          .find((n) => n.startsWith('__reactProps$'));
-      const reactPropertiesName2 = Object
-          .getOwnPropertyNames(element2)
-          .find((n) => n.startsWith('__reactProps$'));
-
-      // 該当するプロパティがあれば出力
-      if (reactPropertiesName1) {
-        // console.log(element1[reactPropsName1]);
-        const reactProperties1 = element1[reactPropertiesName1];
-        const reactProperties2 = element2[reactPropertiesName2];
-        const ariaLabelledby = reactProperties2['aria-labelledby'];
-        // eslint-disable-next-line max-len
-        const quotedStatus = reactProperties1.children[1].props.retweetWithCommentLink.state.quotedStatus;
-        const user = quotedStatus.user || {};
-        const lang = quotedStatus.lang || null;
-        const quotedUserName = user.name ?? null;
-        const quotedScreenName = user.screen_name ?? null;
-        const quotedExpandedUrl = (user.entities?.url?.urls[0]?.expanded_url) ?? null;
-        const quotedText = quotedStatus.text ?? null;
-        const quotedUserDescription = user.description ?? null;
-        const isTranslator = user.is_translator ?? null;
-        const translatorType = user.translator_type ?? null;
-        const isVerified = user.verified ?? null;
-        const isBlueVerified = user.is_blue_verified ?? null;
-        const favoritesCount = user.favourites_count ?? null;
-        const followersCount = user.followers_count ?? null;
-        const isFollowing = user.following ?? null;
-        const friendsCount = user.friends_count ?? null;
-        const statusesCount = user.statuses_count ?? null;
-
-
-        /*
-        //すべての変数を表示
-        console.log("ariaLabelledby");
-        console.log(ariaLabelledby);
-        console.log("lang");
-        console.log(lang);
-        console.log("quotedUserName");
-        console.log(quotedUserName);
-        console.log("quotedScreenName");
-        console.log(quotedScreenName);
-        console.log("quotedExpandedUrl");
-        console.log(quotedExpandedUrl);
-        console.log("quotedText");
-        console.log(quotedText);
-        console.log("quotedUserDescription");
-        console.log(quotedUserDescription);
-        console.log("isTranslator");
-        console.log(isTranslator);
-        console.log("translatorType");
-        console.log(translatorType);
-        console.log("isVerified");
-        console.log(isVerified);
-        console.log("isBlueVerified");
-        console.log(isBlueVerified);
-        console.log("favoritesCount");
-        console.log(favoritesCount);
-        console.log("followersCount");
-        console.log(followersCount);
-        console.log("isFollowing");
-        console.log(isFollowing);
-        console.log("friendsCount");
-        console.log(friendsCount);
-        console.log("statusesCount");
-        console.log(statusesCount);
-        */
-        // tmpDataを作成
-        temporaryData['lang'] = lang;
-        temporaryData['ariaLabelledby'] = ariaLabelledby;
-        temporaryData['quotedUserName'] = quotedUserName;
-        temporaryData['quotedScreenName'] = quotedScreenName;
-        temporaryData['quotedExpandedUrl'] = quotedExpandedUrl;
-        temporaryData['quotedText'] = quotedText;
-        temporaryData['quotedUserDescription'] = quotedUserDescription;
-        temporaryData['isTranslator'] = isTranslator;
-        temporaryData['translatorType'] = translatorType;
-        temporaryData['isVerified'] = isVerified;
-        temporaryData['isBlueVerified'] = isBlueVerified;
-        temporaryData['favoritesCount'] = favoritesCount;
-        temporaryData['followersCount'] = followersCount;
-        temporaryData['isFollowing'] = isFollowing;
-        temporaryData['friendsCount'] = friendsCount;
-        temporaryData['statusesCount'] = statusesCount;
-        // 通報やブロックは行ったかどうか
-        temporaryData['processed'] = false;
-
-        // tweetDatasにtmpDataを追加(既にある場合は追加しない)
-        let isExist = false;
-        for (const tweetData of tweetDatas) {
-          if (tweetData['quotedText'] == temporaryData['quotedText']) {
-            isExist = true;
-          }
-        }
-        if (!isExist) {
-          tweetDatas.push(temporaryData);
+  // urlが変わった場合
+  if (url != window.location.href) {
+    // tweetsを初期化
+    tweets.length = 0;
+    // urlを更新
+    url = window.location.href;
+  }
+  const elements = document.querySelectorAll('article');
+  // 要素ごとにループ
+  for (const article of elements) {
+    try {
+      const tweet = Tweet.from(article);
+      let isExists = false;
+      for (const tw of tweets) {
+        if (tweet.id === tw.id) {
+          isExists = true;
         }
       }
+      if (!isExists) {
+        tweets.push(tweet);
+      }
+    } catch (err) {
+      console.error(err);
     }
-  };
+  }
 
-  // saveProps()を実行
-  saveProperties();
-  // tweetDatasを処理
-  for (const tweetData of tweetDatas) {
-    // tweetDataが処理済みでない場合
-    if (!tweetData['processed']) {
+  // ツイートを処理
+  for (const tweet of tweets) {
+    // tweetが処理済みでない場合
+    // TODO: 二重処理の対策
+    // eslint-disable-next-line sonarjs/no-gratuitous-expressions
+    if (!tweet.processed) {
       // スパム確認
-      const spamResult = calcSpamScore(tweetData);
+      const spamResult = calcSpamScore(tweet);
       const score = spamResult['score'];
       const reason = spamResult['reason'];
-      console.log('tweetData');
-      console.log(tweetData);
-      console.log('score');
-      console.log(score);
+      console.log('tweet', tweet);
+      console.log('score', score);
+
       // aria-labelledbyでqueryselectorして背景色を110000にする
-      const tweetElement = document.querySelector(
-          'article[aria-labelledby=\'' + tweetData['ariaLabelledby'] + '\']',
-      );
+      const tweetElement = document.querySelector(`article[aria-labelledby='${tweet._ariaLabelledby}']`);
 
       // scoreが50以上の場合
       if (score >= 50) {
         // 通報
         console.log('通報');
-
+        // TODO
         tweetElement.style.backgroundColor = '#ff0000';
       }
       // 理由を表示
@@ -504,7 +281,8 @@ const main = () => {
       // 要素の外側（下）に追加
       tweetElement.after(reasonElement);
       // tweetDataを処理済みにする
-      tweetData['processed'] = true;
+      // TODO
+      tweet.processed = true;
     }
   }
 };

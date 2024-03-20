@@ -7,7 +7,7 @@ const V2_BASE_URL = 'https://twitter.com/i/api/2';
 /**
  * APIリクエストに必要なヘッダーを生成する。
  *
- * @return {Header} ヘッダー
+ * @return {Headers} ヘッダー
  */
 const getHeaders = () => {
   const headers = new Headers();
