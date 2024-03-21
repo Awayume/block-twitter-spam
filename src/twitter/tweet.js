@@ -8,8 +8,8 @@ export class Tweet {
    * Tweetクラスを初期化する。
    */
   constructor() {
-    /** @type {string} エレメントの識別に用いる内部的な値 */
-    this._ariaLabelledby = undefined;
+    /** @type {Element} このクラスの解析元となるElement */
+    this.element = undefined;
     /** @type {Object} ツイート作成者の情報 */
     this.author = {
       /** @type {string} ユーザーID */
@@ -82,7 +82,7 @@ export class Tweet {
    *
    * @param {Element} article - articleエレメント
    * @return {Tweet} 解析されたツイートのデータ
-   * @throws {TypeError} 無効な引数もしくはツイートのデータが含まれていないエレメントを引数として受け取った
+   * @throws {TypeError} 無効な引数もしくはツイートのデータが含まれていないElementを引数として受け取った
    */
   static from(article) {
     if (!article) {
@@ -95,16 +95,15 @@ export class Tweet {
         .find((n) => n.startsWith('__reactProps$'))];
     const quotedStatus = tweetProperties?.children[1]?.props?.retweetWithCommentLink.state.quotedStatus;
 
-    // 正しいエレメントか確認
+    // 正しいElementか確認
     if (!tweetProperties || !quotedStatus) {
-      throw new TypeError('ツイートのデータが含まれていないエレメント');
+      throw new TypeError('無効な引数: "article" (ツイートのデータが含まれていない)');
     }
 
     const tweet = new Tweet();
     const user = quotedStatus.user;
 
-    tweet._ariaLabelledby = article[Object.getOwnPropertyNames(article)
-        .find((n) => n.startsWith('__reactProps$'))]['aria-labelledby'];
+    tweet.element = article;
 
     tweet.author.id = user.id_str;
     tweet.author.name = user.name;

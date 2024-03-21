@@ -53,7 +53,7 @@ const main = () => { // eslint-disable-line sonarjs/cognitive-complexity
       console.log('score', score);
 
       // aria-labelledbyでqueryselectorして背景色を110000にする
-      const tweetElement = document.querySelector(`article[aria-labelledby='${tweet._ariaLabelledby}']`);
+      const tweetElement = tweet.element;
 
       // scoreが50以上の場合
       if (score >= 50) {
