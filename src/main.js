@@ -20,20 +20,16 @@ const main = () => { // eslint-disable-line sonarjs/cognitive-complexity
     // urlを更新
     url = window.location.href;
   }
+
   const elements = document.querySelectorAll('article');
-  // 要素ごとにループ
   for (const article of elements) {
     try {
       const tweet = Tweet.from(article);
       let isExists = false;
       for (const tw of tweets) {
-        if (tweet.id === tw.id) {
-          isExists = true;
-        }
+        if (tweet.id === tw.id) isExists = true;
       }
-      if (!isExists) {
-        tweets.push(tweet);
-      }
+      if (!isExists) tweets.push(tweet);
     } catch (err) {
       console.error(err);
     }
@@ -52,7 +48,6 @@ const main = () => { // eslint-disable-line sonarjs/cognitive-complexity
       console.log('tweet', tweet);
       console.log('score', score);
 
-      // aria-labelledbyでqueryselectorして背景色を110000にする
       const tweetElement = tweet.element;
 
       // scoreが50以上の場合
@@ -62,11 +57,13 @@ const main = () => { // eslint-disable-line sonarjs/cognitive-complexity
         // TODO
         tweetElement.style.backgroundColor = '#ff0000';
       }
+
       // 理由を表示
       const reasonElement = document.createElement('div');
       reasonElement.innerHTML = reason;
       // 要素の外側（下）に追加
       tweetElement.after(reasonElement);
+
       // tweetDataを処理済みにする
       // TODO
       tweet.processed = true;

@@ -10,10 +10,7 @@ export const haveCommonValues = (dict1, dict2) => {
   const values1 = Object.values(dict1);
   const values2 = Object.values(dict2);
 
-  /**
-   * 共通値を格納するためのセット。
-   * @type {Set<any>}
-  */
+  /** @type {Set<any>} 共通値を格納するためのセット */
   const commonValues = new Set();
 
   // 辞書1の値をセットに追加

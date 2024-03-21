@@ -37,18 +37,21 @@ export const calcSpamScore = (tweet) => { // eslint-disable-line sonarjs/cogniti
   // ユーザー名のアラビア語の割合を求める
   // eslint-disable-next-line no-unused-vars
   const arabicRatioName = calcArabicRatio(tweet.author.name);
+
   // スパムによくある文言が含まれている場合
   if (checkSpamWords(tweet.content)) {
     console.log('スパムによくある文言が含まれています');
     spamReason+='<p>スパムによくある文言が含まれています</p>';
     spamScore += 50;
   }
+
   // 絵文字の割合が0.5以上の場合
   if (emojiRatio >= 0.5) {
     console.log('絵文字の割合が0.5以上');
     spamReason+='<p>絵文字の割合が0.5以上</p>';
     spamScore += 10;
   }
+
   // プロフィールとツイート本文の言語が異なるかを確認。異なる場合はスコアを10加算する
   const tweetLang = detectLang(tweet.content);
   const profileLang = detectLang(tweet.author.description);
@@ -68,6 +71,7 @@ export const calcSpamScore = (tweet) => { // eslint-disable-line sonarjs/cogniti
     spamReason+='<p>アラビア語が含まれている</p>';
     spamScore += 20;
   }
+
   // blue verifiedの場合
   if (tweet.author.verifyStatus?.type === 'Blue') {
     console.log('blue verifiedのためスコアを20加算します');
@@ -89,10 +93,9 @@ export const calcSpamScore = (tweet) => { // eslint-disable-line sonarjs/cogniti
     }
 
     for (const tw of tweets) {
-      if (tweet.id === tw.id && tweet.author.id === tw.author.id) {
-        tweetCount++;
-      }
+      if (tweet.id === tw.id && tweet.author.id === tw.author.id) tweetCount++;
     }
+
     if (tweetCount >= 2) {
       console.log('リプに同じ人が2個以上いるためスコアを30加算します');
       spamReason+='<p>リプに同じ人が2個以上いる</p>';
