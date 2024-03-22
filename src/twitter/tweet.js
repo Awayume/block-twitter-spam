@@ -1,4 +1,5 @@
 import {getUserVerifiedDate} from './api.js';
+import {Badge} from './badge.js';
 
 /**
  * ツイートのデータを保持するクラス。
@@ -22,8 +23,7 @@ export class Tweet {
       description: undefined,
       /** @type {Object?} ユーザー認証の情報 */
       verifyStatus: {
-        // TODO: 列挙型を作成
-        /** @type {string} 認証の種類 */
+        /** @type {import('./badge.js').BadgeType} 認証バッジの種類 */
         type: undefined,
         /**
          * 認証された日時を取得する。
@@ -111,7 +111,8 @@ export class Tweet {
     tweet.author.description = user.description;
 
     if (user.verified || user.verified_type || user.is_blue_verified) {
-      tweet.author.verifyStatus.type = user.verified_type || (user.is_blue_verified ? 'Blue' : null);
+      // eslint-disable-next-line max-len
+      tweet.author.verifyStatus.type = Badge.of(user.verified_type || (user.is_blue_verified ? 'Blue' : null));
     } else {
       tweet.author.verifyStatus = null;
     }

@@ -1,3 +1,4 @@
+import {Badge} from '../twitter/badge.js';
 import {detectLang} from '../utils/language.js';
 import {haveCommonValues} from '../utils/object.js';
 import {calcArabicRatio, calcEmojiRatio} from '../utils/string.js';
@@ -73,7 +74,7 @@ export const calcSpamScore = (tweet) => { // eslint-disable-line sonarjs/cogniti
   }
 
   // blue verifiedの場合
-  if (tweet.author.verifyStatus?.type === 'Blue') {
+  if (tweet.author.verifyStatus?.type === Badge.BLUE) {
     console.log('blue verifiedのためスコアを20加算します');
     spamReason+='<p>blue verified</p>';
     spamScore += 20;
