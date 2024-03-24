@@ -8,7 +8,7 @@ import {Range} from './range.js';
  */
 
 /**
- * 種類ごとに文字を分類する連想配列。
+ * 言語別にUnicodeコードポイントの範囲を分類する連想配列。
  * @type {Object<string, Array<Range> | Range>}
  */
 const characterRanges = {
@@ -38,6 +38,7 @@ const characterRanges = {
     new Range(0x00_C0, 0x00_FF), // Accented characters
     new Range(0x20_A0, 0x20_CF), // Currency symbols, etc.
   ],
+  // TODO: 修正
   emoji: new Range(0x1_F3_00, 0x1_F5_FF), // 絵文字
 };
 
@@ -55,8 +56,7 @@ export const detectLang = (text) => { // eslint-disable-line sonarjs/cognitive-c
 
   // 言語ごとの出現数をカウント
   for (const char of text) {
-    // eslint-disable-next-line unicorn/prefer-code-point
-    const charCode = char.charCodeAt();
+    const charCode = char.codePointAt();
     let isFound = false;
 
     for (const lang in characterRanges) {
