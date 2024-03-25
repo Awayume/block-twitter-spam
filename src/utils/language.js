@@ -1,6 +1,3 @@
-import {Range} from './range.js';
-
-
 /**
  * @typedef {Object} LangInfo - ツイートの主言語を示すオブジェクト
  * @property {string} primary - 最も可能性が高い言語
@@ -9,37 +6,25 @@ import {Range} from './range.js';
 
 /**
  * 言語別にUnicodeコードポイントの範囲を分類する連想配列。
- * @type {Object<string, Array<Range> | Range>}
+ * @type {Object<string, RegExp>}
  */
 const characterRanges = {
-  ja: [
-    new Range(0x30_40, 0x30_FF), // ひらがな, カタカナ
-    new Range(0xFF_65, 0xFF_9F), // 半角カタカナ
-    new Range(0x4E_00, 0x9F_FF), // 漢字
-  ],
-  en: [
-    new Range(0x00_41, 0x00_5A), // 英大文字
-    new Range(0x00_61, 0x00_7A), // 英小文字
-  ],
-  ar: new Range(0x06_00, 0x06_FF), // アラビア文字
-  zh: new Range(0x4E_00, 0x9F_FF), // 漢字（中国語）
-  ko: new Range(0xAC_00, 0xD7_AF), // ハングル（韓国語）
-  ru: new Range(0x04_00, 0x04_FF), // キリル文字（ロシア語）
-  he: new Range(0x05_90, 0x05_FF), // ヘブライ文字
-  hi: new Range(0x09_00, 0x09_7F), // ヒンディー語
-  th: new Range(0x0E_00, 0x0E_7F), // タイ文字
-  fa: new Range(0x06_00, 0x06_FF), // ペルシャ語
-  de: [
-    new Range(0x00_C0, 0x00_FF), // Umlauts, ß, etc.
-    new Range(0x01_52, 0x01_53), // Œ, œ
-    new Range(0x20_A0, 0x20_CF), // Currency symbols, etc.
-  ],
-  es: [
-    new Range(0x00_C0, 0x00_FF), // Accented characters
-    new Range(0x20_A0, 0x20_CF), // Currency symbols, etc.
-  ],
-  // TODO: 修正
-  emoji: new Range(0x1_F3_00, 0x1_F5_FF), // 絵文字
+  // NOTE: 間違いが複数あり
+  // TODO: 正しいものに修正する
+  ja: /[\u3040-\u30FF]|[\uFF65-\uFF9F]|[\u4E00-\u9FFF]/, // ひらがな,カタカナ|半角カタカナ|漢字
+  // eslint-disable-next-line unicorn/better-regex
+  en: /[\u0041-\u005A]|[\u0061-\u007A]/, // 英大文字|英小文字
+  ar: /[\u0600-\u06FF]/, // アラビア文字
+  zh: /[\u4E00-\u9FFF]/, // 漢字（中国語）
+  ko: /[\uAC00-\uD7AF]/, // ハングル（韓国語）
+  ru: /[\u0400-\u04FF]/, // キリル文字（ロシア語）
+  he: /[\u0590-\u05FF]/, // ヘブライ文字
+  hi: /[\u0900-\u097F]/, // ヒンディー語
+  th: /[\u0E00-\u0E7F]/, // タイ文字
+  fa: /[\u0600-\u06FF]/, // ペルシャ語
+  de: /[\u00C0-\u00FF]|\u0152|\u0153|[\u20A0-\u20CF]/, // Umlauts,ß, etc.|Œ,œ|Currency symbols, etc.
+  es: /[\u00C0-\u00FF]|[\u20A0-\u20CF]/, // Accented characters|Currency symbols, etc.
+  emoji: /[\uD83C\uDC00-\uD83E\uDDFF]/u, // 絵文字
 };
 
 /**
@@ -56,26 +41,13 @@ export const detectLang = (text) => { // eslint-disable-line sonarjs/cognitive-c
 
   // 言語ごとの出現数をカウント
   for (const char of text) {
-    const charCode = char.codePointAt();
     let isFound = false;
 
     for (const lang in characterRanges) {
-      const range = characterRanges[lang];
-
-      if (range instanceof Range) {
-        if (range.isContains(charCode)) {
-          langStats[lang]++;
-          isFound = true;
-          break;
-        }
-      } else {
-        for (const range_ of range) {
-          if (range_.isContains(charCode)) {
-            langStats[lang]++;
-            isFound = true;
-            break;
-          }
-        }
+      if (characterRanges[lang].test(char)) {
+        langStats[lang]++;
+        isFound = true;
+        break;
       }
     }
 
