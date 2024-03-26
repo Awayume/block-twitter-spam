@@ -49,12 +49,15 @@ export const detectLang = (text) => {
   }
 
   // どの言語にも分類されていない文字をunknownとして扱う
-  langStats['unknown'] = textCount;
+  if (textCount) langStats['unknown'] = textCount;
 
   // 割合の高い順にソート
   langStats.sort((a, b) => {
     return b.ratio - a.ratio;
   });
 
-  return {primary: langStats[0].lang, secondary: langStats[1]?.ratio ? langStats[1].lang : null};
+  return {
+    primary: langStats[0]?.ratio ? langStats[0].lang : null,
+    secondary: langStats[1]?.ratio ? langStats[1].lang : null,
+  };
 };
