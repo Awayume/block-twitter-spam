@@ -1,3 +1,5 @@
+import {characterRanges} from './language.js';
+
 /**
  * テキストに占める日本語の割合を求める。
  *
@@ -6,8 +8,8 @@
  */
 export const calcJapaneseRatio = (text) => { // eslint-disable-line no-unused-vars
   let japaneseCount = 0;
-  for (const element of text) {
-    if (/[\u3040-\u309F]|[\u30A0-\u30FF]|[\uFF65-\uFF9F]/.test(element)) japaneseCount++;
+  for (const char of text) {
+    if (characterRanges.ja.test(char)) japaneseCount++;
   }
   return japaneseCount / text.length;
 };
@@ -21,8 +23,8 @@ export const calcJapaneseRatio = (text) => { // eslint-disable-line no-unused-va
  */
 export const calcArabicRatio = (text) => {
   let arabicCount = 0;
-  for (const element of text) {
-    if (/[\u0600-\u06FF]/.test(element)) arabicCount++;
+  for (const char of text) {
+    if (characterRanges.ar.test(char)) arabicCount++;
   }
   return arabicCount / text.length;
 };
@@ -36,8 +38,8 @@ export const calcArabicRatio = (text) => {
  */
 export const calcEmojiRatio = (text) => {
   let emojiCount = 0;
-  for (const element of text) {
-    if (/\p{Emoji}/u.test(element)) emojiCount++;
+  for (const char of text) {
+    if (characterRanges.emoji.test(char)) emojiCount++;
   }
   return emojiCount / text.length;
 };

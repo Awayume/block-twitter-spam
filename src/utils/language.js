@@ -8,7 +8,7 @@
  * 言語別にUnicodeコードポイントの範囲を分類する連想配列。
  * @type {Object<string, RegExp>}
  */
-const characterRanges = {
+export const characterRanges = {
   // NOTE: 間違いが複数あり
   // TODO: 正しいものに修正する
   ja: /[\u3040-\u30FF]|[\uFF65-\uFF9F]|[\u4E00-\u9FFF]/, // ひらがな,カタカナ|半角カタカナ|漢字
