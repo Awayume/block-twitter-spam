@@ -1,7 +1,6 @@
 import {Badge} from '../twitter/badge.js';
 import {detectLang} from '../utils/language.js';
 import {haveCommonValues} from '../utils/object.js';
-import {calcArabicRatio, calcEmojiRatio} from '../utils/string.js';
 import {checkSpamWords} from './word.js';
 
 
@@ -25,19 +24,13 @@ export const calcSpamScore = (tweet) => { // eslint-disable-line sonarjs/cogniti
   /** @type {string} htmlとしてスパムの理由を入れる変数 */
   let spamReason = '';
 
-  // ツイート本文のアラビア語の割合を求める
-  const arabicRatio = calcArabicRatio(tweet.content);
-  // ツイート本文の絵文字の割合を求める
-  const emojiRatio = calcEmojiRatio(tweet.content);
-  // プロフィール文のアラビア語の割合を求める
+  // ツイート本文の言語を解析
+  const tweetLang = detectLang(tweet.content);
+  // プロフィールの言語を解析
+  const profileLang = detectLang(tweet.author.description);
+  // ユーザー名の言語を解析
   // eslint-disable-next-line no-unused-vars
-  const arabicRatioProfile = calcArabicRatio(tweet.author.description);
-  // プロフィール文の文字数を求める
-  // eslint-disable-next-line no-unused-vars
-  const profileLength = tweet.author.description.length;
-  // ユーザー名のアラビア語の割合を求める
-  // eslint-disable-next-line no-unused-vars
-  const arabicRatioName = calcArabicRatio(tweet.author.name);
+  const nameLang = detectLang(tweet.author.name);
 
   // スパムによくある文言が含まれている場合
   if (checkSpamWords(tweet.content)) {
@@ -47,27 +40,27 @@ export const calcSpamScore = (tweet) => { // eslint-disable-line sonarjs/cogniti
   }
 
   // 絵文字の割合が0.5以上の場合
-  if (emojiRatio >= 0.5) {
+  if (tweetLang.stats.emoji >= 0.5) {
     console.log('絵文字の割合が0.5以上');
     spamReason+='<p>絵文字の割合が0.5以上</p>';
     spamScore += 10;
   }
 
-  // プロフィールとツイート本文の言語が異なるかを確認。異なる場合はスコアを10加算する
-  const tweetLang = detectLang(tweet.content);
-  const profileLang = detectLang(tweet.author.description);
+  // プロフィールとツイート本文の言語が異なるかを確認。異なる場合はスコアを加算する
   console.log('tweetLang', tweetLang);
   console.log('profileLang', profileLang);
-
   // プロフィールとツイート本文の言語が異なる場合primaryとsecondaryの順序は問わず一致するか確認。
-  if (!haveCommonValues(tweetLang, profileLang)) {
+  if (!haveCommonValues(
+      {primary: tweetLang.primary, secondary: tweetLang.secondary},
+      {primary: profileLang.primary, secondary: profileLang.secondary},
+  )) {
     console.log('ツイート言語とプロフィール言語が異なるためスコアを20加算します');
     spamReason+='<p>ツイート言語とプロフィール言語が異なる</p>';
     spamScore += 20;
   }
 
   // アラビア語が含まれている場合
-  if (arabicRatio > 0) {
+  if (tweetLang.stats.ar > 0) {
     console.log('アラビア語が含まれているためスコアを20加算します');
     spamReason+='<p>アラビア語が含まれている</p>';
     spamScore += 20;

@@ -2,13 +2,14 @@
  * @typedef {Object} LangInfo - ツイートの主言語を示すオブジェクト
  * @property {string} primary - 最も可能性が高い言語
  * @property {string?} secondary - 2番目に可能性が高い言語
+ * @property {Object<string, number>} stats - 言語別の割合
  */
 
 /**
  * 言語別にUnicodeコードポイントの範囲を分類する連想配列。
  * @type {Object<string, RegExp>}
  */
-export const characterRanges = {
+const characterRanges = {
   // NOTE: 間違いが複数あり
   // TODO: 正しいものに修正する
   ja: /[\u3040-\u30FF]|[\uFF65-\uFF9F]|[\u4E00-\u9FFF]/g, // ひらがな,カタカナ|半角カタカナ|漢字
@@ -34,7 +35,7 @@ export const characterRanges = {
  * @return {LangInfo} 推測したツイートの主言語
  */
 export const detectLang = (text) => {
-  /** @type {Array<{lang: string, ratio: number}>} */
+  /** @type {Object<string, number>} - 言語別の割合*/
   const langStats = [];
   let textCount = text.length;
 
@@ -42,7 +43,7 @@ export const detectLang = (text) => {
   for (const lang in characterRanges) {
     const result = text.match(characterRanges[lang]);
     if (result) {
-      langStats.push({lang: lang, ratio: result.length / text.length});
+      langStats[lang] = result.length / text.length;
       textCount = textCount - result.length;
       if (!textCount) break;
     }
@@ -52,12 +53,14 @@ export const detectLang = (text) => {
   if (textCount) langStats['unknown'] = textCount;
 
   // 割合の高い順にソート
-  langStats.sort((a, b) => {
-    return b.ratio - a.ratio;
+  const ratios = Object.entries(langStats);
+  ratios.sort((a, b) => {
+    return b[1] - a[1];
   });
 
   return {
-    primary: langStats[0]?.ratio ? langStats[0].lang : null,
-    secondary: langStats[1]?.ratio ? langStats[1].lang : null,
+    primary: ratios[0]?.[1] ? ratios[0][0] : null,
+    secondary: ratios[1]?.[1] ? ratios[1][0] : null,
+    stats: langStats,
   };
 };
